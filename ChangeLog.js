@@ -3,49 +3,52 @@ function onEdit(e) {
   //define spreadsheet
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  //define first sheet
-  var sheet = ss.getSheets()[0];
+  //define the first sheet
+  var sheetOne = ss.getSheets()[0];
   
-  //define the sheet you are working on
+  //define the second sheet
+  var sheetTwo = ss.getSheets()[1];
+  
+  //define active sheet
   var sheetCheck = e.source.getActiveSheet();
   
-  //define change log colulmn
-  var changeLogColumn = 12;
-  
-  //define action column
-  var actionLogColumn = 13;
-  
-  //restrict function to first sheet
-  if (sheet.getName() == sheetCheck.getName()) {
+  //define column where changes will be logged
+  var activeColumn;
+  if (sheetOne.getName() == sheetCheck.getName()) {activeColumn = 12}
+  if (sheetTwo.getName() == sheetCheck.getName()) {activeColumn = 20}
   
     //gets the range of cells edited
     var initialRange = e.range;
     
     //counts the number of rows changed
     var numberOfRows = (initialRange.getLastRow() - initialRange.getRow())+1;
-    
+     
     //defines initial range on first sheet
-    var rangeToChange = sheet.getRange(initialRange.getRow(), initialRange.getColumn(), numberOfRows, 1);
+    var rangeToChange = sheetCheck.getRange(initialRange.getRow(), initialRange.getColumn(), numberOfRows, 1);
     
-    //defines the 'Changed' column on the same row(s) as edited range
-    var editedRange = sheet.getRange(initialRange.getRow(), changeLogColumn, numberOfRows, 1)
+    //define changelog column for second user
+    var editedRange 
+    if (initialRange.getColumn() == activeColumn+1){  
+      console.log("right one")
+      editedRange = sheetCheck.getRange(initialRange.getRow(), activeColumn+2, numberOfRows, 1)}
+    else {
+      console.log("wrong one")
+      
+      //define the 'Changed' column on the same row(s) as edited range
+      editedRange = sheetCheck.getRange(initialRange.getRow(), activeColumn, numberOfRows, 1)
+    }
     
     //if not the 'Changed' or 'Actioned' column (or any further to the right)
-    if (initialRange.getColumn() < changeLogColumn){
+    if (initialRange.getColumn() < activeColumn || initialRange.getColumn() == activeColumn+1){
       
       //Sets the changed row to current date
       editedRange.setValue(new Date());
       rangeToChange.setBackground("orange");
     }
     
-    //if in the changed column
-    if (initialRange.getColumn() == actionLogColumn){
-      
-      //define selected row
-      var rangeToClear = sheet.getRange(initialRange.getRow(), 1, numberOfRows, actionLogColumn)
-      
-      //clear highlighting for selected row
+    //clear formatting for row changed
+    if (initialRange.getColumn() == activeColumn+1){
+      var rangeToClear = sheetCheck.getRange(initialRange.getRow(), 1, numberOfRows, activeColumn+1)
       rangeToClear.setBackground(null);
     }
-  }
 }
